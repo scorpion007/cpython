@@ -35,6 +35,10 @@ static void _PyMem_DebugCheckAddress(char api_id, const void *p);
 
 #ifdef MS_WINDOWS
 #  include <windows.h>
+
+/* Handle to use for all Python Heap allocations. */
+static HANDLE PyGlobalHeap;
+
 #elif defined(HAVE_MMAP)
 #  include <sys/mman.h>
 #  ifdef MAP_ANONYMOUS
@@ -49,6 +53,27 @@ static void _PyObject_Free(void *ctx, void *p);
 static void* _PyObject_Realloc(void *ctx, void *ptr, size_t size);
 #endif
 
+void
+PyMem_CreateGlobalHeap()
+{
+#ifdef MS_WINDOWS
+    PyGlobalHeap = HeapCreate(0, 0, 0);
+    if (!PyGlobalHeap)
+    {
+        Py_FatalError("failed to create global heap");
+    }
+#endif
+}
+
+void
+PyMem_DestroyGlobalHeap()
+{
+#ifdef MS_WINDOWS
+    BOOL fOk = HeapDestroy(PyGlobalHeap);
+    assert(fOk);
+#endif
+}
+
 
 static void *
 _PyMem_RawMalloc(void *ctx, size_t size)
@@ -59,7 +84,12 @@ _PyMem_RawMalloc(void *ctx, size_t size)
        To solve these problems, allocate an extra byte. */
     if (size == 0)
         size = 1;
+
+#ifdef MS_WINDOWS
+    return HeapAlloc(PyGlobalHeap, 0, size);
+#else
     return malloc(size);
+#endif
 }
 
 static void *
@@ -73,7 +103,11 @@ _PyMem_RawCalloc(void *ctx, size_t nelem, size_t elsize)
         nelem = 1;
         elsize = 1;
     }
+#ifdef MS_WINDOWS
+    return HeapAlloc(PyGlobalHeap, HEAP_ZERO_MEMORY, nelem * elsize);
+#else
     return calloc(nelem, elsize);
+#endif
 }
 
 static void *
@@ -81,13 +115,21 @@ _PyMem_RawRealloc(void *ctx, void *ptr, size_t size)
 {
     if (size == 0)
         size = 1;
+#ifdef MS_WINDOWS
+    return HeapReAlloc(PyGlobalHeap, 0, ptr, size);
+#else
     return realloc(ptr, size);
+#endif
 }
 
 static void
 _PyMem_RawFree(void *ctx, void *ptr)
 {
+#ifdef MS_WINDOWS
+    HeapFree(PyGlobalHeap, 0, ptr);
+#else
     free(ptr);
+#endif
 }
 
 
