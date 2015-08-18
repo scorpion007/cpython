@@ -40,7 +40,7 @@ if "%1"=="--clean-only" (
 :fetch
 rem Fetch current versions
 
-svn --version > nul 2>&1
+call svn --version > nul 2>&1
 if ERRORLEVEL 9009 (
     echo.svn.exe must be on your PATH.
     echo.Try TortoiseSVN (http://tortoisesvn.net/^) and be sure to check the
@@ -65,7 +65,7 @@ for %%e in (
         echo.%%e already exists, skipping.
     ) else (
         echo.Fetching %%e...
-        svn export %SVNROOT%%%e
+        call svn export %SVNROOT%%%e
     )
 )
 
