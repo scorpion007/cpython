@@ -53,6 +53,8 @@ static void _PyObject_Free(void *ctx, void *p);
 static void* _PyObject_Realloc(void *ctx, void *ptr, size_t size);
 #endif
 
+static void _PyMem_FreeAllArenas(void);
+
 void
 PyMem_CreateGlobalHeap()
 {
@@ -68,6 +70,7 @@ PyMem_CreateGlobalHeap()
 void
 PyMem_DestroyGlobalHeap()
 {
+    _PyMem_FreeAllArenas();
 #ifdef MS_WINDOWS
     BOOL fOk = HeapDestroy(PyGlobalHeap);
     assert(fOk);
@@ -979,6 +982,19 @@ _Py_GetAllocatedBlocks(void)
     return _Py_AllocatedBlocks;
 }
 
+void
+_PyMem_FreeAllArenas(void)
+{
+    uint i = 0;
+    for ( ; i < maxarenas; ++i)
+    {
+        _PyObject_Arena.free(_PyObject_Arena.ctx,
+            (void *)arenas[i].address, ARENA_SIZE);
+        arenas[i].address = 0;
+    }
+    
+    narenas_currently_allocated = 0;
+}
 
 /* Allocate a new arena.  If we run out of memory, return NULL.  Else
  * allocate a new arena, and return the address of an arena_object
