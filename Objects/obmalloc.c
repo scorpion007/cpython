@@ -89,6 +89,11 @@ _PyMem_RawMalloc(void *ctx, size_t size)
         size = 1;
 
 #ifdef MS_WINDOWS
+    /* If the heap hasn't been initialized, initialize on first use. */
+    if (!PyGlobalHeap)
+    {
+        PyMem_CreateGlobalHeap();
+    }
     return HeapAlloc(PyGlobalHeap, 0, size);
 #else
     return malloc(size);
@@ -119,7 +124,18 @@ _PyMem_RawRealloc(void *ctx, void *ptr, size_t size)
     if (size == 0)
         size = 1;
 #ifdef MS_WINDOWS
-    return HeapReAlloc(PyGlobalHeap, 0, ptr, size);
+    if (ptr)
+    {
+        return HeapReAlloc(PyGlobalHeap, 0, ptr, size);
+    }
+    else
+    {
+        /* Sometimes we get called with NULL ptr, which isn't valid for ReAlloc.
+           As a workaround, call HeapAlloc. (Arena allocation is the main
+           offender.)
+        */
+        return HeapAlloc(PyGlobalHeap, 0, size);
+    }
 #else
     return realloc(ptr, size);
 #endif
