@@ -610,8 +610,8 @@ _Py_fstat_noraise(int fd, struct _Py_stat_struct *status)
 {
 #ifdef MS_WINDOWS
     BY_HANDLE_FILE_INFORMATION info;
-    HANDLE h;
-    int type;
+    HANDLE h = INVALID_HANDLE_VALUE;
+    int type = 0;
 
     if (!_PyVerify_fd(fd))
         h = INVALID_HANDLE_VALUE;

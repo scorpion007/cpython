@@ -40,6 +40,7 @@ main(int argc, char *argv[])
     unsigned char *data;
     PyObject *code = NULL, *marshalled = NULL;
     int is_bootstrap = 1;
+    int fd = -1;
 
     PyImport_FrozenModules = _PyImport_FrozenModules;
 
@@ -54,8 +55,13 @@ main(int argc, char *argv[])
         fprintf(stderr, "cannot open '%s' for reading\n", inpath);
         goto error;
     }
-    if (_Py_fstat_noraise(fileno(infile), &status)) {
-        fprintf(stderr, "cannot fstat '%s'\n", inpath);
+    fd = fileno(infile);
+    if (fd < 0) {
+        fprintf(stderr, "cannot get fileno. Error: %d.\n", errno);
+        goto error;
+    }
+    if (_Py_fstat_noraise(fd, &status)) {
+        fprintf(stderr, "cannot fstat '%s'.\n", inpath);
         goto error;
     }
     text_size = status.st_size;
