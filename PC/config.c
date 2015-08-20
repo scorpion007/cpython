@@ -83,6 +83,8 @@ extern PyObject* PyInit__multiprocessing(void);
 extern PyObject* PyInit__socket(void);
 extern PyObject* PyInit__sqlite3(void);
 extern PyObject* PyInit__ssl(void);
+extern PyObject* PyInit_select(void);
+extern PyObject* PyInit_unicodedata(void);
 
 /* tools/freeze/makeconfig.py marker for additional "extern" */
 /* -- ADDMODULE MARKER 1 -- */
@@ -192,7 +194,9 @@ struct _inittab _PyImport_Inittab[] = {
     {"_socket", PyInit__socket},
     {"_sqlite3", PyInit__sqlite3},
     {"_ssl", PyInit__ssl},
-        
+    {"select", PyInit_select},
+    {"unicodedata", PyInit_unicodedata},
+
     /* Sentinel */
     {0, 0}
 };

@@ -83,6 +83,7 @@
         sqlite3$(PyDebugExt).lib;
         ssleay$(PyDebugExt).lib;
         libeay$(PyDebugExt).lib;
+        unicodedata$(PyDebugExt).lib;
         %(AdditionalDependencies)
       </AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
