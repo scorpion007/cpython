@@ -83,10 +83,6 @@
       <Project>{10615b24-73bf-4efa-93aa-236916321317}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="_socket.vcxproj">
-      <Project>{86937f53-c189-40ef-8ce8-8759d8e7d480}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

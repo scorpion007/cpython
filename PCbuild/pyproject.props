@@ -19,7 +19,6 @@
     <SupportSigning Condition="'$(Configuration)' == 'Debug'">false</SupportSigning>
     <SupportSigning Condition="'$(ConfigurationType)' == 'StaticLibrary'">false</SupportSigning>
   </PropertyGroup>
-
   <PropertyGroup>
     <_DebugPreprocessorDefinition>NDEBUG;</_DebugPreprocessorDefinition>
     <_DebugPreprocessorDefinition Condition="$(Configuration) == 'Debug'">_DEBUG;</_DebugPreprocessorDefinition>
@@ -30,12 +29,12 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(PySourcePath)Include;$(PySourcePath)PC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;$(_PlatformPreprocessorDefinition)$(_DebugPreprocessorDefinition)$(_PydPreprocessorDefinition)%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      
+      <PreprocessorDefinitions>WIN32;Py_NO_ENABLE_SHARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling></ExceptionHandling>
+      <ExceptionHandling>
+      </ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level3</WarningLevel>
@@ -47,7 +46,7 @@
     <ClCompile Condition="$(Configuration) == 'Debug'">
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -57,7 +56,7 @@
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalDependencies Condition="$(Configuration) == 'Debug'">ucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration) == 'Debug'">ucrtd.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="$(Configuration) != 'Debug'">ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBC;libucrt.lib;libucrtd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <TargetMachine>MachineX86</TargetMachine>
@@ -88,29 +87,18 @@
       </HeaderFileName>
     </Midl>
   </ItemDefinitionGroup>
-
-  <Target Name="GeneratePythonNtRcH"
-          BeforeTargets="$(MakeVersionInfoBeforeTarget)"
-          Inputs="$(PySourcePath)Include\patchlevel.h"
-          Outputs="$(PySourcePath)PC\pythonnt_rc$(PyDebugExt).h">
-    <WriteLinesToFile File="$(PySourcePath)PC\pythonnt_rc$(PyDebugExt).h" Overwrite="true" Encoding="ascii"
-                      Lines='/* This file created by python.props /t:GeneratePythonNtRcH */
-#define FIELD3 $(Field3Value)
-#define MS_DLL_ID "$(SysWinVer)"
-#define PYTHON_DLL_NAME "$(PyDllName).dll"
-' />
+  <Target Name="GeneratePythonNtRcH" BeforeTargets="$(MakeVersionInfoBeforeTarget)" Inputs="$(PySourcePath)Include\patchlevel.h" Outputs="$(PySourcePath)PC\pythonnt_rc$(PyDebugExt).h">
+    <WriteLinesToFile File="$(PySourcePath)PC\pythonnt_rc$(PyDebugExt).h" Overwrite="true" Encoding="ascii" Lines="/* This file created by python.props /t:GeneratePythonNtRcH */&#xA;#define FIELD3 $(Field3Value)&#xA;#define MS_DLL_ID &quot;$(SysWinVer)&quot;&#xA;#define PYTHON_DLL_NAME &quot;$(PyDllName).dll&quot;&#xA;" />
     <ItemGroup>
-        <FileWrites Include="$(PySourcePath)PC\pythonnt_rc$(PyDebugExt).h" />
+      <FileWrites Include="$(PySourcePath)PC\pythonnt_rc$(PyDebugExt).h" />
     </ItemGroup>
   </Target>
-
   <UsingTask TaskName="KillPython" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
     <ParameterGroup>
       <FileName Required="true" />
     </ParameterGroup>
     <Task>
-      <Code Type="Fragment" Language="cs">
-<![CDATA[
+      <Code Type="Fragment" Language="cs"><![CDATA[
 string fullPath = System.IO.Path.GetFullPath(FileName);
 Log.LogMessage("Looking for " + fullPath, MessageImportance.Normal);
 foreach (System.Diagnostics.Process p in System.Diagnostics.Process.GetProcesses()) {
@@ -123,16 +111,13 @@ foreach (System.Diagnostics.Process p in System.Diagnostics.Process.GetProcesses
     } catch {
     }
 }
-]]>
-      </Code>
+]]></Code>
     </Task>
   </UsingTask>
-  
   <Target Name="KillPython" BeforeTargets="PrepareForBuild" Condition="'$(KillPython)' == 'true'">
     <Message Text="Killing any running python.exe instances..." Importance="high" />
     <KillPython FileName="$(OutDir)python$(PyDebugExt).exe" />
   </Target>
-  
   <!--
   A default target to handle msbuild pcbuild.proj /t:CleanAll.
   
@@ -140,23 +125,16 @@ foreach (System.Diagnostics.Process p in System.Diagnostics.Process.GetProcesses
   CleanAll on them when we really want to clean up.
   -->
   <Target Name="CleanAll" DependsOnTargets="Clean">
-    <MSBuild Projects="@(ProjectReference->'%(FullPath)')"
-             Properties="Configuration=$(Configuration);Platform=$(Platform)"
-             BuildInParallel="true"
-             StopOnFirstFailure="false"
-             Condition="Exists(%(FullPath))"
-             Targets="CleanAll" />
+    <MSBuild Projects="@(ProjectReference->'%(FullPath)')" Properties="Configuration=$(Configuration);Platform=$(Platform)" BuildInParallel="true" StopOnFirstFailure="false" Condition="Exists(%(FullPath))" Targets="CleanAll" />
   </Target>
-
   <PropertyGroup Condition="'$(SigningCertificate)' != '' and $(SupportSigning)">
     <SignToolPath Condition="'$(SignToolPath)' == '' or !Exists($(SignToolPath))">$(registry:HKEY_LOCAL_MACHINE\Software\Microsoft\Windows Kits\Installed Roots@KitsRoot81)\bin\x86\signtool.exe</SignToolPath>
     <SignToolPath Condition="!Exists($(SignToolPath))">$(registry:HKEY_LOCAL_MACHINE\Software\Microsoft\Windows Kits\Installed Roots@KitsRoot)\bin\x86\signtool.exe</SignToolPath>
     <SignToolPath Condition="!Exists($(SignToolPath))">$(registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v7.1A@InstallationFolder)\Bin\signtool.exe</SignToolPath>
     <_SignCommand Condition="Exists($(SignToolPath))">"$(SignToolPath)" sign /q /n "$(SigningCertificate)" /t http://timestamp.verisign.com/scripts/timestamp.dll /d "Python $(PythonVersion)"</_SignCommand>
   </PropertyGroup>
-  
   <Target Name="_SignBuild" AfterTargets="AfterBuild" Condition="'$(SigningCertificate)' != '' and $(SupportSigning)">
     <Error Text="Unable to locate signtool.exe. Set /p:SignToolPath and rebuild" Condition="'$(_SignCommand)' == ''" />
-    <Exec Command='$(_SignCommand) "$(TargetPath)" || $(_SignCommand) "$(TargetPath)" || $(_SignCommand) "$(TargetPath)"' ContinueOnError="false" />
+    <Exec Command="$(_SignCommand) &quot;$(TargetPath)&quot; || $(_SignCommand) &quot;$(TargetPath)&quot; || $(_SignCommand) &quot;$(TargetPath)&quot;" ContinueOnError="false" />
   </Target>
 </Project>
