@@ -1271,9 +1271,9 @@ list_builtin_module_names(void)
     int i;
     if (list == NULL)
         return NULL;
-    for (i = 0; PyImport_Inittab[i].name != NULL; i++) {
+    for (i = 0; PyImport_GetInittab()[i].name != NULL; i++) {
         PyObject *name = PyUnicode_FromString(
-            PyImport_Inittab[i].name);
+            PyImport_GetInittab()[i].name);
         if (name == NULL)
             break;
         PyList_Append(list, name);

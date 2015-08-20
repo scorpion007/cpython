@@ -102,6 +102,7 @@ struct _inittab {
 };
 PyAPI_DATA(struct _inittab *) PyImport_Inittab;
 PyAPI_FUNC(int) PyImport_ExtendInittab(struct _inittab *newtab);
+PyAPI_FUNC(struct _inittab *) PyImport_GetInittab(void);
 #endif /* Py_LIMITED_API */
 
 PyAPI_DATA(PyTypeObject) PyNullImporter_Type;

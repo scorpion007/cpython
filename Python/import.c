@@ -32,6 +32,20 @@ extern const int _PyImport_InittabSize;
 
 struct _inittab *PyImport_Inittab;
 
+struct _inittab *
+PyImport_GetInittab(void)
+{
+    if (!PyImport_Inittab)
+    {
+        PyImport_Inittab = PyMem_MALLOC(_PyImport_InittabSize);
+        if (PyImport_Inittab == NULL)
+		    return NULL;
+
+        memcpy(PyImport_Inittab, _PyImport_Inittab, _PyImport_InittabSize);
+    }
+    return PyImport_Inittab;
+}
+
 static PyObject *initstr = NULL;
 
 /*[clinic input]
@@ -54,15 +68,6 @@ class fs_unicode_converter(CConverter):
 void
 _PyImport_Init(void)
 {
-    if (!PyImport_Inittab)
-    {
-        PyImport_Inittab = PyMem_MALLOC(_PyImport_InittabSize);
-        if (PyImport_Inittab == NULL)
-			Py_FatalError("Can't initialize PyImport_Inittab");
-
-        memcpy(PyImport_Inittab, _PyImport_Inittab, _PyImport_InittabSize);
-    }
-
     PyInterpreterState *interp = PyThreadState_Get()->interp;
     initstr = PyUnicode_InternFromString("__init__");
     if (initstr == NULL)
@@ -955,10 +960,10 @@ static int
 is_builtin(PyObject *name)
 {
     int i, cmp;
-    for (i = 0; PyImport_Inittab[i].name != NULL; i++) {
-        cmp = PyUnicode_CompareWithASCIIString(name, PyImport_Inittab[i].name);
+    for (i = 0; PyImport_GetInittab()[i].name != NULL; i++) {
+        cmp = PyUnicode_CompareWithASCIIString(name, PyImport_GetInittab()[i].name);
         if (cmp == 0) {
-            if (PyImport_Inittab[i].initfunc == NULL)
+            if (PyImport_GetInittab()[i].initfunc == NULL)
                 return -1;
             else
                 return 1;
@@ -1074,7 +1079,7 @@ _imp_create_builtin(PyModuleDef *module, PyObject *spec)
         return NULL;
     }
 
-    for (p = PyImport_Inittab; p->name != NULL; p++) {
+    for (p = PyImport_GetInittab(); p->name != NULL; p++) {
         PyModuleDef *def;
         if (PyUnicode_CompareWithASCIIString(name, p->name) == 0) {
             if (p->initfunc == NULL) {
@@ -2125,21 +2130,12 @@ PyImport_ExtendInittab(struct _inittab *newtab)
     struct _inittab *p;
     int i, n;
 
-    if (!PyImport_Inittab)
-    {
-        PyImport_Inittab = PyMem_MALLOC(_PyImport_InittabSize);
-        if (PyImport_Inittab == NULL)
-            return -1;
-
-        memcpy(PyImport_Inittab, _PyImport_Inittab, _PyImport_InittabSize);
-    }
-
     /* Count the number of entries in both tables */
     for (n = 0; newtab[n].name != NULL; n++)
         ;
     if (n == 0)
         return 0; /* Nothing to do */
-    for (i = 0; PyImport_Inittab[i].name != NULL; i++)
+    for (i = 0; PyImport_GetInittab()[i].name != NULL; i++)
         ;
 
     /* Allocate new memory for the combined table */
