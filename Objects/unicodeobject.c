@@ -307,10 +307,10 @@ PyUnicode_GetMax(void)
 #endif
 }
 
-#ifdef Py_DEBUG
 int
 _PyUnicode_CheckConsistency(PyObject *op, int check_content)
 {
+#ifdef Py_DEBUG
     PyASCIIObject *ascii;
     unsigned int kind;
 
@@ -419,9 +419,9 @@ _PyUnicode_CheckConsistency(PyObject *op, int check_content)
         }
         assert(PyUnicode_READ(kind, data, ascii->length) == 0);
     }
+#endif
     return 1;
 }
-#endif
 
 static PyObject*
 unicode_result_wchar(PyObject *unicode)

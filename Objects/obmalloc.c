@@ -1783,6 +1783,29 @@ _Py_GetAllocatedBlocks(void)
 
 #endif /* WITH_PYMALLOC */
 
+/* Is target in the list?  The list is traversed via the nextpool pointers.
+ * The list may be NULL-terminated, or circular.  Return 1 if target is in
+ * list, else 0.
+ */
+static int
+pool_is_in_list(const poolp target, poolp list)
+{
+#ifdef Py_DEBUG
+    poolp origlist = list;
+    assert(target != NULL);
+    if (list == NULL)
+        return 0;
+    do {
+        if (target == list)
+            return 1;
+        list = list->nextpool;
+    } while (list != NULL && list != origlist);
+    return 0;
+#else
+    return 1;
+#endif  /* Py_DEBUG */
+}
+
 #ifdef PYMALLOC_DEBUG
 /*==========================================================================*/
 /* A x-platform debugging allocator.  This doesn't manage memory directly,
@@ -1840,31 +1863,6 @@ write_size_t(void *p, size_t n)
         n >>= 8;
     }
 }
-
-#ifdef Py_DEBUG
-/* Is target in the list?  The list is traversed via the nextpool pointers.
- * The list may be NULL-terminated, or circular.  Return 1 if target is in
- * list, else 0.
- */
-static int
-pool_is_in_list(const poolp target, poolp list)
-{
-    poolp origlist = list;
-    assert(target != NULL);
-    if (list == NULL)
-        return 0;
-    do {
-        if (target == list)
-            return 1;
-        list = list->nextpool;
-    } while (list != NULL && list != origlist);
-    return 0;
-}
-
-#else
-#define pool_is_in_list(X, Y) 1
-
-#endif  /* Py_DEBUG */
 
 /* Let S = sizeof(size_t).  The debug malloc asks for 4*S extra bytes and
    fills them with useful stuff, here calling the underlying malloc's result p:
