@@ -68,6 +68,22 @@ extern PyObject* PyInit__string(void);
 extern PyObject* PyInit__stat(void);
 extern PyObject* PyInit__opcode(void);
 
+/* Standard Python modules that are now linked as static libs */
+extern PyObject* PyInit__bz2(void);
+extern PyObject* PyInit__ctypes(void);
+extern PyObject* PyInit__decimal(void);
+extern PyObject* PyInit__elementtree(void);
+extern PyObject* PyInit__hashlib(void);
+extern PyObject* PyInit__lzma(void);
+#ifdef WIN32
+extern PyObject* PyInit__msi(void);
+extern PyObject* PyInit__overlapped(void);
+#endif
+extern PyObject* PyInit__multiprocessing(void);
+extern PyObject* PyInit__socket(void);
+extern PyObject* PyInit__sqlite3(void);
+extern PyObject* PyInit__ssl(void);
+
 /* tools/freeze/makeconfig.py marker for additional "extern" */
 /* -- ADDMODULE MARKER 1 -- */
 
@@ -161,6 +177,22 @@ struct _inittab _PyImport_Inittab[] = {
     {"_stat", PyInit__stat},
     {"_opcode", PyInit__opcode},
 
+    /* Standard lib modules */
+    {"_bz2", PyInit__bz2},
+    {"_ctypes", PyInit__ctypes},
+    {"_decimal", PyInit__decimal},
+    {"_elementtree", PyInit__elementtree},
+    {"_hashlib", PyInit__hashlib},
+    {"_lzma", PyInit__lzma},
+#ifdef WIN32
+    {"_msi", PyInit__msi},
+    {"_overlapped", PyInit__overlapped},
+#endif
+    {"_multiprocessing", PyInit__multiprocessing},
+    {"_socket", PyInit__socket},
+    {"_sqlite3", PyInit__sqlite3},
+    {"_ssl", PyInit__ssl},
+        
     /* Sentinel */
     {0, 0}
 };

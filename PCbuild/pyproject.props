@@ -54,7 +54,37 @@
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      
+      <!-- lzma dependencies -->
+      <AdditionalDependencies Condition="'$(Platform)' == 'Win32'">$(lzmaDir)\bin_i486\liblzma.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)' == 'x64'">$(lzmaDir)\bin_x86-64\liblzma.a;%(AdditionalDependencies)</AdditionalDependencies>
+      
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <AdditionalDependencies>
+        ws2_32.lib;
+        msi.lib;
+        rpcrt4.lib;
+        cabinet.lib;
+        crypt32.lib;
+        _bz2$(PyDebugExt).lib;
+        _ctypes$(PyDebugExt).lib;
+        _decimal$(PyDebugExt).lib;
+        _elementtree$(PyDebugExt).lib;
+        _hashlib$(PyDebugExt).lib;
+        _lzma$(PyDebugExt).lib;
+        _msi$(PyDebugExt).lib;
+        _overlapped$(PyDebugExt).lib;
+        _multiprocessing$(PyDebugExt).lib;
+        _socket$(PyDebugExt).lib;
+        _sqlite3$(PyDebugExt).lib;
+        _ssl$(PyDebugExt).lib;
+        _tkinter$(PyDebugExt).lib;
+        select$(PyDebugExt).lib;
+        sqlite3$(PyDebugExt).lib;
+        ssleay$(PyDebugExt).lib;
+        libeay$(PyDebugExt).lib;
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
       <TargetMachine Condition="'$(Platform)' == 'x64'">MachineX64</TargetMachine>
       <ProfileGuidedDatabase Condition="$(SupportPGO)">$(OutDir)$(TargetName).pgd</ProfileGuidedDatabase>
