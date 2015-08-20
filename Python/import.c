@@ -27,7 +27,10 @@ static PyObject *extensions = NULL;
 /* This table is defined in config.c: */
 extern struct _inittab _PyImport_Inittab[];
 
-struct _inittab *PyImport_Inittab = _PyImport_Inittab;
+/* Size in bytes of _PyImport_Inittab */
+extern const int _PyImport_InittabSize;
+
+struct _inittab *PyImport_Inittab;
 
 static PyObject *initstr = NULL;
 
@@ -51,6 +54,15 @@ class fs_unicode_converter(CConverter):
 void
 _PyImport_Init(void)
 {
+    if (!PyImport_Inittab)
+    {
+        PyImport_Inittab = PyMem_MALLOC(_PyImport_InittabSize);
+        if (PyImport_Inittab == NULL)
+			Py_FatalError("Can't initialize PyImport_Inittab");
+
+        memcpy(PyImport_Inittab, _PyImport_Inittab, _PyImport_InittabSize);
+    }
+
     PyInterpreterState *interp = PyThreadState_Get()->interp;
     initstr = PyUnicode_InternFromString("__init__");
     if (initstr == NULL)
@@ -2099,7 +2111,6 @@ PyInit_imp(void)
     return NULL;
 }
 
-
 /* API for embedding applications that want to add their own entries
    to the table of built-in modules.  This should normally be called
    *before* Py_Initialize().  When the table resize fails, -1 is
@@ -2113,6 +2124,15 @@ PyImport_ExtendInittab(struct _inittab *newtab)
     static struct _inittab *our_copy = NULL;
     struct _inittab *p;
     int i, n;
+
+    if (!PyImport_Inittab)
+    {
+        PyImport_Inittab = PyMem_MALLOC(_PyImport_InittabSize);
+        if (PyImport_Inittab == NULL)
+            return -1;
+
+        memcpy(PyImport_Inittab, _PyImport_Inittab, _PyImport_InittabSize);
+    }
 
     /* Count the number of entries in both tables */
     for (n = 0; newtab[n].name != NULL; n++)

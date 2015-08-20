@@ -164,3 +164,6 @@ struct _inittab _PyImport_Inittab[] = {
     /* Sentinel */
     {0, 0}
 };
+
+const int _PyImport_InittabSize = sizeof(_PyImport_Inittab);
+
